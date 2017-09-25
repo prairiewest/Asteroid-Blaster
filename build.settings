@@ -3,13 +3,20 @@ settings =
 	orientation =
 	{
 		default ="portrait",
-		supported = {"portrait"},
+		supported = {"portrait","portraitUpsideDown"},
 	},
     macos =
     {
         plist =
         {
             NSHumanReadableCopyright = "Copyright © 2017 Prairie West Software"
+        },
+    },
+    iphone =
+    {
+        plist =
+        {
+            NSMotionUsageDescription = "Accelerometer is used to move the space ship",
         },
     },
 }
