@@ -1,11 +1,10 @@
--- This project is based on a Corona Labs sample project
--- The original was found at: 
+-- This project is based on a Corona Labs marketplace project
+-- The original was found at: https://marketplace.coronalabs.com/asset/star-explorer
 
 -- Copyright (c) 2017 Corona Labs Inc.
 -- Code is MIT licensed and can be re-used; see https://www.coronalabs.com/links/code/license
--- Other assets are licensed by their creators:
---    Art assets by Kenney: http://kenney.nl/assets
---    Music and sound effect assets by Eric Matyas: http://www.soundimage.org
+
+-- See LICENSES.txt
 
 local composer = require("composer")
 composer.recycleOnSceneChange = true
