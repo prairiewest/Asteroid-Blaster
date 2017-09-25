@@ -1,0 +1,120 @@
+settings =
+{
+    plugins =
+    {
+        ["CoronaProvider.native.popup.social"] =
+        {
+            publisherId = "com.coronalabs",
+            supportedPlatforms = { iphone = true, android = true }
+        },
+		["plugin.admob"] =
+		{
+			publisherId = "com.coronalabs",
+			supportedPlatforms = { iphone=true, android=true }
+		}, 
+        ["plugin.amazon.iap"] =
+        {
+            publisherId = "com.amazon",
+            supportedPlatforms = { ["android-kindle"] = true }
+        },
+        ["plugin.google.iap.v3"] =
+        {
+            publisherId = "com.coronalabs",
+            supportedPlatforms = { android = true }
+        },
+        ["plugin.advertisingId"] =
+        {
+            publisherId = "com.coronalabs"
+        },
+    },
+
+	orientation =
+ 	{
+		default = "portrait",
+		supported =
+ 		{
+			"portrait",
+			"portraitUpsideDown"
+		}
+	},
+
+	iphone =
+	{
+		plist =
+		{
+            UIStatusBarHidden = true,
+            CFBundleIconFiles = {
+                "Icon.png",
+                "Icon@2x.png",
+                "Icon-40.png",
+                "Icon-40@2x.png",
+                "Icon-60.png",
+                "Icon-60@2x.png",
+                "Icon-60@3x.png",
+                "Icon-72.png",
+                "Icon-72@2x.png",
+                "Icon-76.png",
+                "Icon-76@2x.png",
+                "Icon-Small-50.png",
+                "Icon-Small-50@2x.png",
+                "Icon-Small.png",
+                "Icon-Small@2x.png",
+                "Icon-Small@3x.png",
+                "Icon-Small-40.png",
+                "Icon-Small-40@2x.png",
+                "Icon-Small-40@3x.png"
+            },
+			CFBundleLocalizations =
+			{
+				"English"
+			}
+		}
+	},
+
+    android =
+    {
+        usesPermissions =
+        {
+			"android.permission.ACCESS_NETWORK_STATE",
+			"android.permission.INTERNET",
+			"com.android.vending.BILLING",
+			"com.android.vending.CHECK_LICENSE"
+        }
+    },
+    
+	window = 
+	{
+        defaultMode = "normal",
+        defaultViewWidth = 640,
+        defaultViewHeight = 960,
+        resizable = false,
+        enableMaximizeButton = false,
+        titleText = 
+        {
+        	default = "Spiky Swim",
+        	["en_US"] = "Spiky Swim"
+        }
+    },
+
+    excludeFiles = {
+        -- Exclude all Android icon files and desktop icons
+        iphone = { "Icon-*pi.png", "Icon*.icns", "Icon*.ico"  },
+
+        -- Exclude iOS retina icons and desktop icons
+        android = { "Icon*@2x.png", "Icon*.icns", "Icon*.ico"  },
+
+        -- Exclude mobile splash screens and icons, win icon
+        osx = { "Default*.png", "Icon*.png", "Icon*.ico" },
+
+        -- Exclude mobile splash screens and icons, osx icon
+        win32 = { "Default*.png", "Icon*.png", "Icon*.icns" }
+    },
+
+    build =
+    {
+        neverStripDebugInfo = true
+    }
+
+}
+
+

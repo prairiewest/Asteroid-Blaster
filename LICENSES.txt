@@ -1,0 +1,45 @@
+This project is based off the Corona Marketplace template:
+  https://marketplace.coronalabs.com/asset/star-explorer
+
+Additional code, art, sound effects and icons Copyright (c) 2017 Todd Trann, and are released
+under the CC0 license: https://creativecommons.org/publicdomain/zero/1.0/
+  Twitter:  https://twitter.com/toddtrann
+  Web site: http://prairiewest.net
+  You can read about the development of this game on the blog at the web site above.
+  
+Copyright (c) 2017 Corona Labs Inc.
+Code is MIT licensed and can be re-used; see https://www.coronalabs.com/links/code/license
+  
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Art assets by Kenney: https://kenney.nl/assets/space-shooter-redux
+  License (Creative Commons Zero, CC0)
+  http://creativecommons.org/publicdomain/zero/1.0/
+  You may use these graphics in personal and commercial projects.
+  Credit (Kenney or www.kenney.nl) would be nice but is not mandatory.
+			
+Original project Music and sound effect assets were by Eric Matyas: 
+  http://www.soundimage.org
+  (not used in this version)
+   
+Background tracks:
+  1.mp3 : CC-BY-3.0 https://soundcloud.com/djx-space/x-space-dream-house-music
+  2.mp3 : CC-BY-3.0 http://aries-4rce-beatz.com/chill_trap.htm
+  3.mp3 : CC-BY-3.0 https://soundcloud.com/submergedvisitor/silli-t
+  

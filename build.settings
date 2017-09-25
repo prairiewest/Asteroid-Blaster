@@ -1,0 +1,15 @@
+settings =
+{
+	orientation =
+	{
+		default ="portrait",
+		supported = {"portrait"},
+	},
+    macos =
+    {
+        plist =
+        {
+            NSHumanReadableCopyright = "Copyright © 2017 Prairie West Software"
+        },
+    },
+}
