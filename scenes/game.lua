@@ -87,17 +87,42 @@ local enemyTable = {}
 local shipsRemaining = {}
 
 local ship, asteroidLoopTimer, scoreText, energyBar, energyBarBack, shipEnergy, shield
-local mainGroup, uiGroup, tapGroup, foreground
+local mainGroup, uiGroup, tapGroup, foregroundLeft, foregroundRight
 local fallingItems = {}
 local gemChance = 0
 
 local function handleTouchEvents(event)
-    if (event.target.id == "foreground") then
+    if (event.target.id == "tapLeft") then
         if event.phase == "began" then
+            if (runtime.settings["controls"] == "tap") then
+                runtime.keyDown["left"] = true
+            end
             runtime.keyDown["space"] = true
         end
         if event.phase == "ended" then
-            runtime.keyDown["space"] = false
+            if (runtime.settings["controls"] == "tap") then
+                runtime.keyDown["left"] = false
+            end
+            if (runtime.keyDown["right"] == false) then
+                runtime.keyDown["space"] = false
+            end
+        end
+        return true
+    end
+    if (event.target.id == "tapRight") then
+        if event.phase == "began" then
+            if (runtime.settings["controls"] == "tap") then
+                runtime.keyDown["right"] = true
+            end
+            runtime.keyDown["space"] = true
+        end
+        if event.phase == "ended" then
+            if (runtime.settings["controls"] == "tap") then
+                runtime.keyDown["right"] = false
+            end
+            if (runtime.keyDown["left"] == false) then
+                runtime.keyDown["space"] = false
+            end
         end
         return true
     end
@@ -853,11 +878,17 @@ function scene:create( event )
         end
     } )
 
-    foreground = display.newRect(tapGroup,_W*0.5,_H*0.5,_W,_H)
-    foreground.id = "foreground"
-    foreground:setFillColor(1,1,1,0.02)
-    foreground:addEventListener( "touch", handleTouchEvents )
-            
+    foregroundLeft = display.newRect(tapGroup,_W*0.25,_H*0.5,_W*0.5,_H)
+    foregroundLeft.id = "tapLeft"
+    foregroundLeft:setFillColor(1,1,1,0.02)
+    foregroundLeft:addEventListener( "touch", handleTouchEvents )
+
+    foregroundRight = display.newRect(tapGroup,_W*0.75,_H*0.5,_W*0.5,_H)
+    foregroundRight.id = "tapRight"
+    foregroundRight:setFillColor(1,1,1,0.02)
+    foregroundRight:addEventListener( "touch", handleTouchEvents )
+    
+    runtime.logger("Controls: " .. runtime.settings["controls"])
 end
 
 
@@ -872,10 +903,15 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "collision", onCollision )
-        if system.hasEventSource( "accelerometer" ) then
-            system.setAccelerometerInterval( 100 )
-            runtime.shipAcceleration = 0.2 -- Less acceleration than keyboard
-            Runtime:addEventListener( "accelerometer", onDeviceTilt )
+        if system.hasEventSource("accelerometer") and runtime.settings["platform"] ~= "simulator" then
+            if runtime.settings["controls"] == nil or runtime.settings["controls"] == "tilt" then
+                system.setAccelerometerInterval( 100 )
+                runtime.shipAcceleration = 0.2 -- Less acceleration than keyboard
+                Runtime:addEventListener( "accelerometer", onDeviceTilt )
+            end
+        end
+        if (runtime.settings["controls"] == "tap") and runtime.settings["platform"] ~= "simulator" then
+            system.activate( "multitouch" )
         end
 	end
 end

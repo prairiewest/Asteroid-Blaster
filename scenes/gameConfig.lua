@@ -9,8 +9,8 @@ local widget = require ("widget")
 local _W = display.contentWidth
 local _H = display.contentHeight 
 
-local screenGroup, mainGroup, settingsLabel, menuBtn, menuText, bgLabel, menuButton
-local bgSlider, fxLabel, fxSlider
+local screenGroup, mainGroup, radioGroup, settingsLabel, bgLabel, menuButton
+local bgSlider, fxLabel, fxSlider, controlsLabel, radioLabel1, radioLabel2
 local previewSoundPlaying = false
 
 local function buttonTouched(event)
@@ -69,11 +69,20 @@ local function fgSliderListener( event )
     end
 end
 
+local function onSwitchPress( event )
+    local switch = event.target
+    if (switch.isOn) then
+        db.saveSetting("controls", switch.id)
+    end
+end
+
 function scene:create( event )
 	screenGroup = self.view
 	mainGroup = display.newGroup()
 	screenGroup:insert(mainGroup)
-
+    radioGroup = display.newGroup()
+    screenGroup:insert(radioGroup)
+    
 	-- Background
 	local background = display.newRect(mainGroup,_W*0.5,_H*0.5,_W,_H)
 	background:setFillColor(0,0,0)
@@ -81,7 +90,7 @@ function scene:create( event )
 	settingsLabel = display.newText(mainGroup,"Settings", 0, 0, native.systemFont, 40)
 	settingsLabel.x = _W * 0.5;
 	settingsLabel.y = 60;
-	settingsLabel:setFillColor(230/255, 230/255, 230/255 )
+	settingsLabel:setFillColor(1,1,1)
 	
 	--Add a menu button
     menuButton = display.newImageRect(mainGroup,"images/menuButton.png", 250, 100)
@@ -138,6 +147,43 @@ function scene:create( event )
 		listener = fgSliderListener
 	}
 	mainGroup:insert( fxSlider )
+
+    controlsLabel = display.newText(mainGroup, "Controls", 50, 490, native.systemFont, 30)
+    controlsLabel.anchorY = 1
+    controlsLabel.anchorX = 0
+    controlsLabel:setFillColor(230/255,230/255,230/255 )
+
+    if system.hasEventSource("accelerometer") and runtime.settings["platform"] ~= "simulator" then    
+        local radioButton1 = widget.newSwitch({left = 100, top = 520, style = "radio", id = "tilt", onPress = onSwitchPress })
+        if (runtime.settings["controls"] == "tilt") then
+            radioButton1:setState( { isOn=true} )
+        end
+        radioGroup:insert( radioButton1 )
+        radioLabel1 = display.newText(mainGroup, "Tilt to move", 145, 520, native.systemFont, 30)
+        radioLabel1.anchorY = 0.1
+        radioLabel1.anchorX = 0
+        radioLabel1:setFillColor(230/255,230/255,230/255 )
+         
+        local radioButton2 = widget.newSwitch({left = 100,top = 580,style = "radio",id = "tap",onPress = onSwitchPress })
+        if (runtime.settings["controls"] == "tap") then
+            radioButton2:setState( { isOn=true} )
+        end
+        radioGroup:insert( radioButton2 )
+        radioLabel2 = display.newText(mainGroup, "Tap to move", 145, 580, native.systemFont, 30)
+        radioLabel2.anchorY = 0.1
+        radioLabel2.anchorX = 0
+        radioLabel2:setFillColor(230/255,230/255,230/255 )
+    else
+        local radioButton1 = widget.newSwitch({left = 100, top = 520, style = "radio", id = "keyboard", onPress = onSwitchPress })
+        if (runtime.settings["controls"] == "keyboard") then
+            radioButton1:setState( { isOn=true} )
+        end
+        radioGroup:insert( radioButton1 )
+        radioLabel1 = display.newText(mainGroup, "Keyboard", 145, 520, native.systemFont, 30)
+        radioLabel1.anchorY = 0.1
+        radioLabel1.anchorX = 0
+        radioLabel1:setFillColor(230/255,230/255,230/255 )
+    end
 
 end
 

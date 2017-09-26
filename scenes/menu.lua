@@ -33,8 +33,13 @@ local function buttonTouched(event)
                     gamesplayed = gamesplayed + 1
                     db.saveSetting("gamesplayed", gamesplayed)
                     runtime.logger("Lifetime games played: " .. gamesplayed)
-                    composer.removeScene( "scenes.game" )
-                    composer.gotoScene( "scenes.game", { effect = "crossFade", time = 400 } )         
+                    if (runtime.settings["controls"] == nil) then
+                        composer.removeScene( "scenes.controlChoice" )
+                        composer.gotoScene( "scenes.controlChoice", { effect = "slideLeft", time = 400 } )
+                    else
+                        composer.removeScene( "scenes.game" )
+                        composer.gotoScene( "scenes.game", { effect = "crossFade", time = 400 } )
+                    end     
                 elseif id == "about" then
                     runtime.playSound("select")
                     composer.gotoScene( "scenes.gameAbout", { effect = "slideRight", time = 400 } )
@@ -66,22 +71,19 @@ function scene:create( event )
     fgGroup = display.newGroup()
     sceneGroup:insert(fgGroup)
     
-	title = display.newImageRect( sceneGroup, "images/title.png", 350, 175 )
+	title = display.newImageRect( fgGroup, "images/title.png", 350, 175 )
 	title.x = _W * 0.5
 	title.y = _H * 0.25
-	fgGroup:insert(title)
 
-    playButton = display.newImageRect(sceneGroup,"images/playButton.png", 250, 100)
+    playButton = display.newImageRect(fgGroup,"images/playButton.png", 250, 100)
     playButton.x, playButton.y = display.contentCenterX, _H * 0.66
 	playButton.id = "play"
     playButton:addEventListener( "touch", buttonTouched )
-    fgGroup:insert(playButton)
 
-    highScoresButton = display.newImageRect(sceneGroup,"images/scoresButton.png", 250, 100)
+    highScoresButton = display.newImageRect(fgGroup,"images/scoresButton.png", 250, 100)
     highScoresButton.x, highScoresButton.y = display.contentCenterX, _H * 0.8   
 	highScoresButton.id = "scores"
 	highScoresButton:addEventListener( "touch", buttonTouched )
-	fgGroup:insert(highScoresButton)
 
     btn_config = display.newImageRect(sceneGroup,"images/config.png", 60, 60)
     btn_config.id = "config"
