@@ -1,5 +1,7 @@
 # Asteroid Blaster
 
+![Screenshot](https://raw.githubusercontent.com/prairiewest/Asteroid-Blaster/master/itchio_315x250.png "")
+
  This is a complete mobile game, developed in Lua using [Corona](https://coronalabs.com) for the 
  [CoronaDefoldJam](https://itch.io/jam/coronadefoldjam).  
  
