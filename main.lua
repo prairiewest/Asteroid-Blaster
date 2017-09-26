@@ -8,7 +8,7 @@
 
 local composer = require("composer")
 composer.recycleOnSceneChange = true
-local runtime = require("libraries.runtime")
+local runtime = require("libraries.runtime") -- important to load this before db.lua ever gets loaded
 runtime.settings["currentscene"] = "main"
 
 display.setStatusBar( display.HiddenStatusBar ) --Hide status bar from the beginning
