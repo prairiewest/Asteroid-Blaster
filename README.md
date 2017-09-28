@@ -1,4 +1,4 @@
-# Asteroid Blaster
+# Asteroid Blasteroid
 
 ![Screenshot](https://raw.githubusercontent.com/prairiewest/Asteroid-Blaster/master/itchio_315x250.png "")
 
