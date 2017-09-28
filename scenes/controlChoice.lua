@@ -8,7 +8,7 @@ local _W = display.contentWidth
 local _H = display.contentHeight 
 
 local screenGroup, mainGroup, settingsLabel, playButton
-local controls1, controls2
+local controls1, controls2, controls3, chooseLabel
 
 local function buttonTouched(event)
     local t = event.target
@@ -26,7 +26,7 @@ local function buttonTouched(event)
             t.alpha = 1
             local b = t.contentBounds
             if event.x >= b.xMin and event.x <= b.xMax and event.y >= b.yMin and event.y <= b.yMax then       
-                if id == "tilt" or id == "tap" or id == "keyboard" then
+                if id == "tilt" or id == "tap" or id == "drag" or id == "keyboard" or id == "mouse" then
                     runtime.playSound("select")
                     db.saveSetting("controls", id)
                     composer.gotoScene( "scenes.game", { effect = "crossFade", time = 400 } )
@@ -50,32 +50,38 @@ function scene:create( event )
 	settingsLabel.x = _W * 0.5;
 	settingsLabel.y = 60;
 	settingsLabel:setFillColor(1,1,1 )
-    
-    if system.hasEventSource("accelerometer") and runtime.settings["platform"] ~= "simulator" then
-        local chooseLabel = display.newText(mainGroup,"Please choose:", 0, 0, native.systemFont, 40)
-        chooseLabel.x = _W * 0.5;
-        chooseLabel.y = 180;
-        chooseLabel:setFillColor(230/255, 230/255, 230/255 )
-    
-        runtime.logger("Showing tilt/tap control choice")
+
+    chooseLabel = display.newText(mainGroup,"Please choose:", 0, 0, native.systemFont, 40)
+    chooseLabel.x = _W * 0.5;
+    chooseLabel.y = 180;
+    chooseLabel:setFillColor(230/255, 230/255, 230/255 )
+            
+    if system.hasEventSource("accelerometer") and runtime.settings["platform"] ~= "simulator" then   
         controls1 = display.newImageRect(mainGroup,"images/controls_tilt.png", 380, 160)
-        controls1.x, controls1.y = _W * 0.5, _H * 0.4
+        controls1.x, controls1.y = _W * 0.5, _H * 0.35
         controls1.id = "tilt"
         controls1:addEventListener( "touch", buttonTouched )
         
-        controls2 = display.newImageRect(mainGroup,"images/controls_tap.png", 380, 160)
-        controls2.x, controls2.y = _W * 0.5, _H * 0.65
-        controls2.id = "tap"
+        controls2 = display.newImageRect(mainGroup,"images/controls_drag.png", 380, 160)
+        controls2.x, controls2.y = _W * 0.5, _H * 0.55
+        controls2.id = "drag"
         controls2:addEventListener( "touch", buttonTouched )        
+
+        controls3 = display.newImageRect(mainGroup,"images/controls_tap.png", 380, 160)
+        controls3.x, controls3.y = _W * 0.5, _H * 0.75
+        controls3.id = "tap"
+        controls3:addEventListener( "touch", buttonTouched ) 
     else
-        runtime.logger("Showing keyboard controls")
         controls1 = display.newImageRect(mainGroup,"images/controls_keyboard.png", 380, 160)
-        controls1.x, controls1.y = _W * 0.5, _H * 0.45
-        
-        playButton = display.newImageRect(mainGroup,"images/playButton.png", 250, 100)
-        playButton.x, playButton.y = display.contentCenterX, _H * 0.70
-        playButton.id = "keyboard"
-        playButton:addEventListener( "touch", buttonTouched )
+        controls1.id = "keyboard"
+        controls1.x, controls1.y = _W * 0.5, _H * 0.40
+        controls1:addEventListener( "touch", buttonTouched ) 
+
+        controls2 = display.newImageRect(mainGroup,"images/controls_mouse.png", 380, 160)
+        controls2.id = "mouse"
+        controls2.x, controls2.y = _W * 0.5, _H * 0.70
+        controls2:addEventListener( "touch", buttonTouched ) 
+                
     end
 
 end

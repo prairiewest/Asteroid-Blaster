@@ -76,7 +76,7 @@ local explosionSprite = { name="explosion", frames={ 1,2,3,4,5,6,7,8,9,10 }, tim
 local lives = 3
 local score = 0
 local died = false
-local laserEnergyConsume = 4
+local laserEnergyConsume = 1
 local ticksUntilLaserActive = 0
 local ticksUntilScroll = 0
 local ticksUntilAsteroid = 0
@@ -90,6 +90,7 @@ local ship, asteroidLoopTimer, scoreText, energyBar, energyBarBack, shipEnergy, 
 local mainGroup, uiGroup, tapGroup, foregroundLeft, foregroundRight
 local fallingItems = {}
 local gemChance = 0
+local dragMinY = _H * 0.7
 
 local function handleTouchEvents(event)
     if (event.target.id == "tapLeft") then
@@ -126,6 +127,39 @@ local function handleTouchEvents(event)
         end
         return true
     end
+end
+
+local function dragShip( event )
+
+    local ship = event.target
+    local phase = event.phase
+
+    if ( "began" == phase ) then
+        -- Set touch focus on the ship
+        display.currentStage:setFocus( ship )
+        -- Store initial offset position
+        ship.touchOffsetX = event.x - ship.x
+        ship.touchOffsetY = event.y - ship.y
+
+    elseif ( "moved" == phase ) then
+        -- Move the ship to the new touch position
+        ship.x = event.x - ship.touchOffsetX
+        if (event.y - ship.touchOffsetY > dragMinY) then
+            ship.y = event.y - ship.touchOffsetY
+        else
+            ship.y = dragMinY
+        end
+        shield.x = ship.x
+        shield.y = ship.y
+        runtime.keyDown["space"] = true
+
+    elseif ( "ended" == phase or "cancelled" == phase ) then
+        -- Release touch focus on the ship
+        display.currentStage:setFocus( nil )
+        runtime.keyDown["space"] = false
+    end
+
+    return true  -- Prevents touch propagation to underlying objects
 end
 
 local function createAsteroid()
@@ -348,6 +382,7 @@ local function restoreShip()
 	shield.alpha = 1
 	shield.isBodyActive = true
 	shield.x = ship.x
+	shield.y = ship.y
 
 	-- Fade in the ship
 	transition.to( ship, { alpha=1, time=2000,
@@ -500,10 +535,10 @@ local function gameTick()
             runtime.shipVelocity = runtime.shipVelocity * 0.5
         end
         shield.x = ship.x
-        if runtime.keyDown["space"]  then
+        if runtime.keyDown["space"] or runtime.autoFire then
             if ticksUntilLaserActive == 0 then
                 fireLaser()
-                ticksUntilLaserActive = runtime.fireRate
+                ticksUntilLaserActive = runtime.ticksBetweenLaserFire
             end
         end
         if runtime.shipVelocity ~= 0.0 then
@@ -840,13 +875,6 @@ function scene:create( event )
 	sceneGroup:insert(uiGroup)
 	tapGroup = display.newGroup()  -- The clear rectangle used to listen for taps to fire the laser
 	sceneGroup:insert(tapGroup)
-		
-	ship = display.newImageRect( mainGroup, objectSheet, 4, 98, 79 )
-	ship.x = display.contentCenterX
-	ship.y = display.contentHeight - 100
-	physics.addBody( ship, { radius=30, isSensor=true, filter=playerCFilter  } )
-    ship.isSleepingAllowed = false
-	ship.myName = "ship"
 
     -- the game starts with a shield protecting the ship
     shield = display.newImageRect( mainGroup, objectSheet, 6, 133, 108 )
@@ -855,6 +883,15 @@ function scene:create( event )
     physics.addBody( shield, { radius=67, isSensor=true, filter=shieldCFilter  } )
     shield.isSleepingAllowed = false
     shield.myName = "shield"
+    		
+	ship = display.newImageRect( mainGroup, objectSheet, 4, 98, 79 )
+	ship.x = display.contentCenterX
+	ship.y = display.contentHeight - 100
+	ship.touchOffsetX = 0
+	ship.touchOffsetY = 0
+	physics.addBody( ship, { radius=30, isSensor=true, filter=playerCFilter  } )
+    ship.isSleepingAllowed = false
+	ship.myName = "ship"
 
 	-- Display lives and score
 	scoreText = display.newText( uiGroup, "Score: " .. score, _W - 180, 30, native.systemFont, 36 )
@@ -878,15 +915,21 @@ function scene:create( event )
         end
     } )
 
-    foregroundLeft = display.newRect(tapGroup,_W*0.25,_H*0.5,_W*0.5,_H)
-    foregroundLeft.id = "tapLeft"
-    foregroundLeft:setFillColor(1,1,1,0.02)
-    foregroundLeft:addEventListener( "touch", handleTouchEvents )
-
-    foregroundRight = display.newRect(tapGroup,_W*0.75,_H*0.5,_W*0.5,_H)
-    foregroundRight.id = "tapRight"
-    foregroundRight:setFillColor(1,1,1,0.02)
-    foregroundRight:addEventListener( "touch", handleTouchEvents )
+    if (runtime.settings["controls"] == "tilt" or runtime.settings["controls"] == "tap") then
+        foregroundLeft = display.newRect(tapGroup,_W*0.25,_H*0.5,_W*0.5,_H)
+        foregroundLeft.id = "tapLeft"
+        foregroundLeft:setFillColor(1,1,1,0.02)
+        foregroundLeft:addEventListener( "touch", handleTouchEvents )
+    
+        foregroundRight = display.newRect(tapGroup,_W*0.75,_H*0.5,_W*0.5,_H)
+        foregroundRight.id = "tapRight"
+        foregroundRight:setFillColor(1,1,1,0.02)
+        foregroundRight:addEventListener( "touch", handleTouchEvents )
+    end
+    
+    if (runtime.settings["controls"] == "tap" or runtime.settings["controls"] == "drag") then
+        runtime.autoFire = true
+    end
     
     runtime.logger("Controls: " .. runtime.settings["controls"])
 end
@@ -913,6 +956,9 @@ function scene:show( event )
         if (runtime.settings["controls"] == "tap") and runtime.settings["platform"] ~= "simulator" then
             system.activate( "multitouch" )
         end
+        if (runtime.settings["controls"] == "drag" or runtime.settings["controls"] == "mouse") then
+            ship:addEventListener( "touch", dragShip )
+        end
 	end
 end
 
@@ -928,8 +974,10 @@ function scene:hide( event )
 		-- Code here runs immediately after the scene goes entirely off screen
 		Runtime:removeEventListener( "collision", onCollision )
 		physics.pause()
-        if system.hasEventSource( "accelerometer" ) then
-            Runtime:removeEventListener( "accelerometer", onDeviceTilt )
+        if system.hasEventSource("accelerometer") and runtime.settings["platform"] ~= "simulator" then
+            if runtime.settings["controls"] == nil or runtime.settings["controls"] == "tilt" then
+                Runtime:removeEventListener( "accelerometer", onDeviceTilt )
+            end
         end
 	end
 end
