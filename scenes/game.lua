@@ -76,11 +76,14 @@ local explosionSprite = { name="explosion", frames={ 1,2,3,4,5,6,7,8,9,10 }, tim
 local lives = 3
 local score = 0
 local died = false
-local laserEnergyConsume = 1
+local laserEnergyConsume = runtime.laserEnergyConsume
 local ticksUntilLaserActive = 0
 local ticksUntilScroll = 0
 local ticksUntilAsteroid = 0
 local ticksUntilEnemy = runtime.ticksBetweenEnemySpawn
+local enemiesSpawned = 0
+local weaponType = 1
+local shipVelocity = 0
 
 local asteroidsTable = {}
 local enemyTable = {}
@@ -90,6 +93,7 @@ local ship, asteroidLoopTimer, scoreText, energyBar, energyBarBack, shipEnergy, 
 local mainGroup, uiGroup, tapGroup, foregroundLeft, foregroundRight
 local fallingItems = {}
 local gemChance = 0
+local weaponDropChance = 0
 local dragMinY = _H * 0.7
 
 local function handleTouchEvents(event)
@@ -222,10 +226,34 @@ local function fireLaser()
 	newLaser.x = ship.x
 	newLaser.y = ship.y
 	newLaser:toBack()
+    transition.to( newLaser, { y=-40, time=500,
+        onComplete = function() display.remove( newLaser ) end
+    } )
+    
+    if (weaponType ==2) then
+        local newLaser2 = display.newImageRect( mainGroup, objectSheet, 5, 14, 40 )
+        physics.addBody( newLaser2, "dynamic", { isSensor=true, filter=laserCFilter  } )
+        newLaser2.isBullet = true
+        newLaser2.myName = "laser"
+        newLaser2.x = ship.x-5
+        newLaser2.y = ship.y
+        newLaser2:toBack()
+        transition.to( newLaser2, { y=-40, x=newLaser2.x-80, time=500,
+            onComplete = function() display.remove( newLaser2 ) end
+        } )
+        
+        local newLaser3 = display.newImageRect( mainGroup, objectSheet, 5, 14, 40 )
+        physics.addBody( newLaser3, "dynamic", { isSensor=true, filter=laserCFilter  } )
+        newLaser3.isBullet = true
+        newLaser3.myName = "laser"
+        newLaser3.x = ship.x + 5
+        newLaser3.y = ship.y
+        newLaser:toBack()
+        transition.to( newLaser3, { y=-40, x=newLaser3.x+80,time=500,
+            onComplete = function() display.remove( newLaser3 ) end
+        } )
+    end
 
-	transition.to( newLaser, { y=-40, time=500,
-		onComplete = function() display.remove( newLaser ) end
-	} )
 end
 
 local function enemyFire(enemy)
@@ -278,7 +306,7 @@ local function moveEnemy(e)
         if e.behaviour == 2 then
             -- same as 1 except the enemy pays attention if the ship is moving and 
             -- tries to anticipate projected future location
-            e.targetY = e.y + 20 + math.random(0,40)
+            e.targetY = e.y + 30 + math.random(0,40)
             e.targetX = ship.x
             if runtime.keyDown["left"] then e.targetX  = e.targetX + 64; end
             if runtime.keyDown["right"] then e.targetX  = e.targetX - 64; end
@@ -314,6 +342,7 @@ local function moveEnemy(e)
 end
 
 local function createEnemy()
+    enemiesSpawned = enemiesSpawned + 1
     local whichEnemy = math.random(1,3)
     local newEnemy = display.newImageRect( mainGroup, enemySheet, whichEnemy, 80, 80 )
     local sizeScale = math.random(70,100)/100
@@ -327,7 +356,8 @@ local function createEnemy()
     newEnemy.myName = "enemy"
     newEnemy:toFront()
     newEnemy.ticksSinceFiring = 0
-    newEnemy.ticksBetweenShots = math.random(45, 200)
+    newEnemy.ticksBetweenShots = math.random(45, 200) - enemiesSpawned -- Newer enemies fire faster
+    if newEnemy.ticksBetweenShots < 45 then newEnemy.ticksBetweenShots = 45; end
     newEnemy.nextMove = 1
     runtime.playSound("enemy" .. whichEnemy)
 
@@ -450,6 +480,7 @@ end
 local function playerOutOfEnergy()
     if ( died == false ) then
         died = true
+        if enemiesSpawned > 10 then enemiesSpawned = 10; end
         runtime.playSound("outofenergy")
         transition.to( ship, { rotation=630, xScale=0.2, yScale=0.2, time=1500,
             onComplete = function()
@@ -487,7 +518,9 @@ local function gameTick()
     end
     if ticksUntilEnemy < 1 then
         enemyLoop()
-        ticksUntilEnemy = runtime.ticksBetweenEnemySpawn + math.random(1,150)
+        -- Enemies spawn faster over time
+        ticksUntilEnemy = runtime.ticksBetweenEnemySpawn + math.random(1,150) - enemiesSpawned * 5
+        if ticksUntilEnemy < 40 then ticksUntilEnemy = 40; end
     else
         ticksUntilEnemy = ticksUntilEnemy - 1
     end
@@ -506,33 +539,33 @@ local function gameTick()
         end
     end
     if runtime.keyDown["left"] then
-        runtime.shipVelocity = runtime.shipVelocity - runtime.shipAcceleration
-        if runtime.shipVelocity < 0-runtime.maxShipVelocity then
-            runtime.shipVelocity = 0-runtime.maxShipVelocity
+        shipVelocity = shipVelocity - runtime.shipAcceleration
+        if shipVelocity < 0-runtime.maxShipVelocity then
+            shipVelocity = 0-runtime.maxShipVelocity
         end
     end
     if runtime.keyDown["right"] then
-        runtime.shipVelocity = runtime.shipVelocity + runtime.shipAcceleration
-        if runtime.shipVelocity < 0-runtime.maxShipVelocity then
-            runtime.shipVelocity = 0-runtime.maxShipVelocity
+        shipVelocity = shipVelocity + runtime.shipAcceleration
+        if shipVelocity < 0-runtime.maxShipVelocity then
+            shipVelocity = 0-runtime.maxShipVelocity
         end
     end
     -- not moving left or right, so slow ship down
     if runtime.keyDown["left"]==false and runtime.keyDown["right"]==false then
-        runtime.shipVelocity = runtime.shipVelocity * 0.8
-        if (runtime.shipVelocity > -0.01 and runtime.shipVelocity < 0.01) then
-            runtime.shipVelocity = 0.0
+        shipVelocity = shipVelocity * 0.8
+        if (shipVelocity > -0.01 and shipVelocity < 0.01) then
+            shipVelocity = 0.0
         end
     end
     if ship ~= nil and died == false then
-        ship.x = ship.x + runtime.shipVelocity
+        ship.x = ship.x + shipVelocity
         if (ship.x + 49 > _W) then
             ship.x = _W - 49
-            runtime.shipVelocity = runtime.shipVelocity * 0.5
+            shipVelocity = shipVelocity * 0.5
         end
         if (ship.x < 49) then 
             ship.x = 49
-            runtime.shipVelocity = runtime.shipVelocity * 0.5
+            shipVelocity = shipVelocity * 0.5
         end
         shield.x = ship.x
         if runtime.keyDown["space"] or runtime.autoFire then
@@ -541,10 +574,10 @@ local function gameTick()
                 ticksUntilLaserActive = runtime.ticksBetweenLaserFire
             end
         end
-        if runtime.shipVelocity ~= 0.0 then
+        if shipVelocity ~= 0.0 then
             -- Move the level 3 stars in the opposite direction the ship is going
             -- And only partially as fast
-            starfield.move(0-runtime.shipVelocity, 0.0, 0.3)
+            starfield.move(0-shipVelocity, 0.0, 0.3)
         end
         shipEnergy = shipEnergy - runtime.energyLossPerTick
         if (shipEnergy < 1) then
@@ -584,20 +617,26 @@ local function adjustScore(amount)
     scoreText.text = "Score: " .. score
 end
 
-local function createGem(gx, gy)
-    gemChance = 0
-    local newGem = display.newImageRect(mainGroup,"images/gem.png", 30, 30)
+local function createGem(gx, gy, gemType)
+    local newGem = display.newImageRect(mainGroup,"images/gem" .. gemType .. ".png", 30, 30)
     newGem.x, newGem.y = gx, gy
     newGem.fallSpeed = math.random(2,3)
     newGem.rotateSpeed = math.random(-5,5)
     newGem.myName = "gem"
+    newGem.gemType = gemType
     physics.addBody(newGem, "static", {isSensor=true, filter=pickupCFilter })
     table.insert(fallingItems, newGem)
 end
 
 local function collectGem(obj)
     adjustScore(50)
-    shipEnergy = shipEnergy + runtime.energyGainPerGem
+    if (obj.gemType == 1) then
+        shipEnergy = shipEnergy + runtime.energyGainPerGem
+    elseif (obj.gemType == 2) then
+        weaponType = 2
+        ship:setFillColor(1,0.6,0.6)
+        timer.performWithDelay( 10000, function() weaponType = 1; ship:setFillColor(1,1,1); end, 1 )
+    end
     runtime.playSound("collect")
     for i,item in pairs(fallingItems) do
         if (item == obj) then
@@ -660,7 +699,8 @@ local function onCollision( event )
                     if (pChance > 3) then
                         local ax = asteroidsTable[i].x -- Local var in case asteroid is gone by the time timer fires
                         local ay = asteroidsTable[i].y
-                        timer.performWithDelay( 30, function() createGem(ax, ay); end, 1 )
+                        timer.performWithDelay( 30, function() createGem(ax, ay, 1); end, 1 )
+                        gemChance = 0
                     end
                     
 					table.remove( asteroidsTable, i )
@@ -691,12 +731,16 @@ local function onCollision( event )
                     explosionAnimation:addEventListener("sprite", gameSpriteListener)
                     mainGroup:insert(explosionAnimation)
 
-                    gemChance = gemChance + 1
-                    local pChance = math.random(1,gemChance)
-                    if (pChance > 3) then
-                        local ax = enemyTable[i].x -- Local var in case asteroid is gone by the time timer fires
-                        local ay = enemyTable[i].y
-                        timer.performWithDelay( 30, function() createGem(ax, ay); end, 1 )
+                    -- Enemies can drop weapon upgrades
+                    if weaponType == 1 then
+                        weaponDropChance = weaponDropChance + 1
+                        local wChance = math.random(1,weaponDropChance)
+                        if (wChance > 5) then
+                            local ax = enemyTable[i].x -- Local var in case asteroid is gone by the time timer fires
+                            local ay = enemyTable[i].y
+                            timer.performWithDelay( 30, function() createGem(ax, ay, 2); end, 1 )
+                            weaponDropChance = 0
+                        end
                     end
                     
                     table.remove( enemyTable, i )
@@ -941,6 +985,12 @@ function scene:show( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
 		Runtime:addEventListener("enterFrame",gameTick)
+        if runtime.settings["platform"] == "android" then
+            native.setProperty( "androidSystemUiVisibility", "immersiveSticky" )
+        end
+        runtime.keyDown["left"] = false
+        runtime.keyDown["right"] = false
+        runtime.keyDown["space"] = false
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
@@ -969,6 +1019,9 @@ function scene:hide( event )
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is on screen (but is about to go off screen)
 		Runtime:removeEventListener("enterFrame",gameTick)
+		if runtime.settings["platform"] == "android" then
+            native.setProperty( "androidSystemUiVisibility", "default" )
+    		end
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen

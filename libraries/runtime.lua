@@ -2,28 +2,33 @@ local M = {}
 
 M.dbPath = system.pathForFile("gamedata.db3", system.DocumentsDirectory)
 
+--------------------------------------------
+-- Game balancing
+--------------------------------------------
+M.ticksBetweenLaserFire = 12 -- how fast should autofire be
+M.scrollRate = 3 -- background scrolling
+M.shipAcceleration = 0.3  -- keyboard and tap use this to determine how fast to ramp up horizontal travel
+M.maxShipVelocity = 20  -- the fastest the ship can travel left or right
+M.energyLossPerTick = 5  -- how fast the ship consumes energy just from flying
+M.laserEnergyConsume = 0 -- does firing consume any ship energy
+M.maxEnergy = 12000  -- the most energy the ship can hold
+M.energyGainPerGem = 1300  -- how much energy is gained by picking up an energy crystal
+M.ticksBetweenAsteroidSpawn = 34  -- how many game ticks between asteroids
+M.ticksBetweenEnemySpawn = 250  -- the initial enemy spawn rate (it gets faster over time)
+M.pointsPerEnemy = 250  -- how many points to score for killing an enemy ship
+M.pointsPerAsteroid = 100  -- how many points to score for blowing up an asteroid
+M.numBackgroundTracks = 3  -- how many background tracks are in the sounds/background/ folder
+
+--------------------------------------------
+-- Other globals
+--------------------------------------------
+M.finalScore = 0
 M.selected = nil
-M.backgroundSound = nil
 M.keyDown = {}
 M.keyDown["left"] = false
 M.keyDown["right"] = false
 M.keyDown["space"] = false
-M.autoFire = false
-M.ticksBetweenLaserFire = 12
-M.scrollRate = 3
-M.shipAcceleration = 0.3
-M.shipVelocity = 0
-M.maxShipVelocity = 20
-M.energyLossPerTick = 5
-M.maxEnergy = 10000
-M.energyGainPerGem = 1200
-M.ticksBetweenAsteroidSpawn = 35
-M.ticksBetweenEnemySpawn = 250
-M.pointsPerEnemy = 250
-M.pointsPerAsteroid = 100
-M.finalScore = 0
-M.numBackgroundTracks = 3
-
+M.autoFire = false  -- autofire mode will be turned on with most control schemes
 M.settings = {}
 M.settings["debug"] = false
 M.settings["games_this_session"] = 1
@@ -87,6 +92,7 @@ M.sounds["enemy2"] = audio.loadSound("sounds/enemy2.mp3")
 M.sounds["enemy3"] = audio.loadSound("sounds/enemy3.mp3")
 M.sounds["enemy4"] = audio.loadSound("sounds/enemy4.mp3")
 M.sounds["enemylaser"] = audio.loadSound("sounds/enemylaser.mp3")
+M.backgroundSound = nil  -- the currently playing background audio
 
 audio.reserveChannels(1)  --Reserve first channel for sound effects
 

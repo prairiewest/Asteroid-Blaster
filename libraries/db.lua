@@ -26,8 +26,8 @@ M.init = function()
 
 				INSERT INTO settings (key,value,vtype) VALUES 
 					('dbversion','1.0','f'),
-					('bgvolume','0.40','f'),
-					('fxvolume','0.70','f'),
+					('bgvolume','0.35','f'),
+					('fxvolume','0.60','f'),
 					('highscore','0','i'),
 					('gamesplayed','0','i');
 					
